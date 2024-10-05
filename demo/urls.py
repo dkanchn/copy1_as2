@@ -16,13 +16,10 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.urls import path, include
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
-    #path("tasks/", include("tasks.urls")),
-    path("QuotaEnroll/", include("QuotaEnroll.urls")),
-    path("users/", include("users.urls")),
-    path("", lambda request: redirect("tasks:index")),
+    path('admin/', admin.site.urls),  # ใช้ Django Admin สำหรับการจัดการ
+    path('manage/', include('admin.urls')),  # หน้า admin interface สำหรับการจัดการโควต้า
+    path('students/', include('students.urls')),  # หน้าเว็บสำหรับ students
 ]
