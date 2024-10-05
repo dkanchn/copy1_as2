@@ -4,6 +4,6 @@ from . import views
 app_name = 'admin'
 
 urlpatterns = [
-    path('courses/', views.manage_courses, name='manage_courses'),
-    path('quota-requests/', views.manage_quotas, name='manage_quotas'),
+    path('courses/', views.course, name='manage_courses'),
+    path('quota-requests/', views.request_quota, name='manage_quotas'),
 ]

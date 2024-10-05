@@ -20,6 +20,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # ใช้ Django Admin สำหรับการจัดการ
-    path('manage/', include('admin.urls')),  # หน้า admin interface สำหรับการจัดการโควต้า
+    path('manage/', include('adminQuota.urls')),  # หน้า admin interface สำหรับการจัดการโควต้า
     path('students/', include('students.urls')),  # หน้าเว็บสำหรับ students
 ]
