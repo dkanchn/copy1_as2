@@ -21,7 +21,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("tasks/", include("tasks.urls")),
+    #path("tasks/", include("tasks.urls")),
     path("QuotaEnroll/", include("QuotaEnroll.urls")),
     path("users/", include("users.urls")),
     path("", lambda request: redirect("tasks:index")),

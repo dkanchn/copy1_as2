@@ -22,3 +22,7 @@ def add(request):
         
     
     return render(request, "tasks/add.html", {"form": form})
+
+
+#def add_task(request):
+#    return render(request, "tasks/add_task.html")
