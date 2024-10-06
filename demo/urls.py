@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),  # ใช้ Django Admin สำหรับการจัดการ
     path('manage/', include('adminQuota.urls')),  # หน้า admin interface สำหรับการจัดการโควต้า
     path('students/', include('students.urls')),  # หน้าเว็บสำหรับ students
+    path('', include('students.urls')),
 ]

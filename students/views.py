@@ -1,4 +1,10 @@
 from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -39,3 +45,44 @@ def quota_status(request):
     return render(request, "students/quota_status.html", {
         "quota_requests": quota_requests,
     })
+
+def student_login(request):
+    return render(request, 'students/login.html')
+
+# Define your view for login
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        # Authenticate the user
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            
+            # Check if the user is an admin
+            if user.is_superuser:
+                return redirect('dashboard')  # Redirect admin to their dashboard
+            
+            # Check if the user is a student (for example, check if they belong to the 'student' group)
+            elif user.groups.filter(name='student').exists():
+                return redirect('student_dashboard')  # Redirect students to their dashboard
+            
+            # Default: if no role found, redirect to the homepage
+            return redirect('home')
+
+        else:
+            messages.error(request, 'Invalid username or password')
+
+    return render(request, 'login.html')
+
+# Example view for student dashboard (you should define this in your urls.py)
+@login_required
+def student_dashboard(request):
+    return render(request, 'students/dashboard.html')
+
+# Example view for admin dashboard (you should define this in your urls.py)
+@login_required
+def admin_dashboard(request):
+    return render(request, 'admin/dashboard.html')
