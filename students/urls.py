@@ -7,5 +7,6 @@ urlpatterns = [
     path('', views.index, name='index'),  # กำหนดหน้าแรกของแอป students
     path('request-quota/', views.request_quota, name='request_quota'),
     path('quota-status/', views.quota_status, name='quota_status'),
-    path('login/', views.student_login, name='login'),
+    path('', views.dashboard, name='dashboard'),
+    path('login/', views.login_view, name='login'),
 ]

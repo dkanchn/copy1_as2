@@ -1,88 +1,76 @@
-from django.shortcuts import render
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from .models import QuotaRequest, Course
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 
-
-# Create your views here.
-from django.shortcuts import render, redirect
-from .models import Student
-from adminQuota.models import Course, QuotaRequest  # import โมเดล Course และ QuotaRequest
+# ฟังก์ชันแสดงหน้า dashboard ของ students หลังจาก login สำเร็จ
 
 def index(request):
-    students = Student.objects.all()
-    return render(request, "students/index.html", {
-        "students": students
-    })
+    return render(request, 'students/index.html')
 
-def student_detail(request, student_id):
-    student = Student.objects.get(pk=student_id)
+@login_required
+def student_dashboard(request):
+    student = request.user  # ใช้ user ที่ login เข้ามา (ควรเป็น student)
     quota_requests = QuotaRequest.objects.filter(student=student)
-    return render(request, "students/student_detail.html", {
-        "student": student,
-        "quota_requests": quota_requests,
+    
+    return render(request, 'students/dashboard.html', {
+        'quota_requests': quota_requests
     })
 
-def request_quota(request):
-    if request.method == "POST":
-        student = Student.objects.get(pk=int(request.POST["student"]))
-        course = Course.objects.get(pk=int(request.POST["course"]))
-        # สร้าง QuotaRequest ใหม่
-        QuotaRequest.objects.create(student=student, course=course, status='pending')
-        return redirect("students:student_detail", student_id=student.id)
-
+# ฟังก์ชันสำหรับแสดงรายวิชาที่สามารถขอโควต้าได้
+@login_required
+def available_courses(request):
     courses = Course.objects.all()
-    students = Student.objects.all()
-    return render(request, "students/request_quota.html", {
-        "courses": courses,
-        "students": students,
+    return render(request, 'students/available_courses.html', {
+        'courses': courses
     })
 
+# ฟังก์ชันสำหรับการขอโควต้าในรายวิชา
+@login_required
+def request_quota(request, course_id):
+    student = request.user
+    course = get_object_or_404(Course, id=course_id)
+    
+    if request.method == 'POST':
+        # ตรวจสอบว่ามีการขอโควต้าสำหรับรายวิชานี้หรือไม่
+        existing_request = QuotaRequest.objects.filter(student=student, course=course).first()
+        if existing_request:
+            messages.error(request, 'คุณได้ทำการขอโควต้าสำหรับรายวิชานี้แล้ว')
+        else:
+            QuotaRequest.objects.create(student=student, course=course, status='pending')
+            messages.success(request, 'ขอโควต้าเรียบร้อยแล้ว')
+        return redirect('students:student_dashboard')
+    
+    return render(request, 'students/request_quota.html', {
+        'course': course
+    })
+
+# ฟังก์ชันสำหรับดูสถานะการขอโควต้า
+@login_required
 def quota_status(request):
-    quota_requests = QuotaRequest.objects.all()
-    return render(request, "students/quota_status.html", {
-        "quota_requests": quota_requests,
+    student = request.user
+    quota_requests = QuotaRequest.objects.filter(student=student)
+    
+    return render(request, 'students/quota_status.html', {
+        'quota_requests': quota_requests
     })
 
-def student_login(request):
-    return render(request, 'students/login.html')
-
-# Define your view for login
-def user_login(request):
+# ฟังก์ชันสำหรับ login ของ students
+def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
-        
-        # Authenticate the user
         user = authenticate(request, username=username, password=password)
-        
         if user is not None:
             login(request, user)
-            
-            # Check if the user is an admin
-            if user.is_superuser:
-                return redirect('dashboard')  # Redirect admin to their dashboard
-            
-            # Check if the user is a student (for example, check if they belong to the 'student' group)
-            elif user.groups.filter(name='student').exists():
-                return redirect('student_dashboard')  # Redirect students to their dashboard
-            
-            # Default: if no role found, redirect to the homepage
-            return redirect('home')
-
+            return redirect('dashboard')  # เปลี่ยนไปที่ Dashboard
         else:
-            messages.error(request, 'Invalid username or password')
-
-    return render(request, 'login.html')
-
-# Example view for student dashboard (you should define this in your urls.py)
-@login_required
-def student_dashboard(request):
+            # การจัดการกรณีล็อกอินไม่สำเร็จ
+            return render(request, 'students/login.html', {'error': 'Invalid credentials'})
+    else:
+        return render(request, 'students/login.html')
+    
+def dashboard(request):
     return render(request, 'students/dashboard.html')
-
-# Example view for admin dashboard (you should define this in your urls.py)
-@login_required
-def admin_dashboard(request):
-    return render(request, 'admin/dashboard.html')

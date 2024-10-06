@@ -17,10 +17,11 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from students import views as student_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),  # ใช้ Django Admin สำหรับการจัดการ
-    path('manage/', include('adminQuota.urls')),  # หน้า admin interface สำหรับการจัดการโควต้า
     path('students/', include('students.urls')),  # หน้าเว็บสำหรับ students
-    path('', include('students.urls')),
+    path("users/", include("users.urls")),
+    path('', student_views.login_view, name='login'),
 ]
